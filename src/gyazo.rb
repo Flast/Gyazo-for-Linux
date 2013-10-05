@@ -37,6 +37,8 @@ boundary = '----BOUNDARYBOUNDARY----'
 HOST = 'gyazo.com'
 CGI = '/upload.cgi'
 UA   = 'Gyazo/1.0'
+USERNAME = ''
+PASSWORD = ''
 
 data = <<EOF
 --#{boundary}\r
@@ -64,7 +66,10 @@ else
   proxy_host, proxy_port = nil, nil
 end
 Net::HTTP::Proxy(proxy_host, proxy_port).start(HOST,80) {|http|
-  res = http.post(CGI,data,header)
+  req = Net::HTTP::Post.new(CGI)
+  req.basic_auth USERNAME, PASSWORD
+  header.each {|key, val| req[key] = val}
+  res = http.request(req,data)
   url = res.response.body
   puts url
   if system "which #{clipboard_cmd} >/dev/null 2>&1" then
